@@ -34,6 +34,10 @@ export async function getProducts(
     if (filters?.inStockOnly) {
       list = list.filter((p) => p.inStock);
     }
+    if (filters?.searchQuery?.trim()) {
+      const q = filters.searchQuery.trim().toLowerCase();
+      list = list.filter((p) => p.name.toLowerCase().includes(q));
+    }
 
     switch (sort) {
       case 'price-asc':
@@ -94,6 +98,13 @@ export async function getBrandCounts(
       list = list.filter((p) =>
         p.sizes.some((s) => filters.sizes!.includes(s))
       );
+    }
+    if (filters?.inStockOnly) {
+      list = list.filter((p) => p.inStock);
+    }
+    if (filters?.searchQuery?.trim()) {
+      const q = filters.searchQuery.trim().toLowerCase();
+      list = list.filter((p) => p.name.toLowerCase().includes(q));
     }
     const map = new Map<string, number>();
     list.forEach((p) => map.set(p.brand, (map.get(p.brand) ?? 0) + 1));

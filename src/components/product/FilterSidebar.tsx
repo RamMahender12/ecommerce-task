@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import {
   useBrandCounts,
+  useCategories,
   useSizes,
   usePriceRange,
 } from '@/hooks/use-products';
@@ -64,6 +65,7 @@ export function FilterSidebar({
 }: FilterSidebarProps) {
   const [brandSearch, setBrandSearch] = useState('');
   const [brandOpen, setBrandOpen] = useState(true);
+  const [categoryOpen, setCategoryOpen] = useState(true);
   const [priceOpen, setPriceOpen] = useState(true);
   const [sizeOpen, setSizeOpen] = useState(true);
 
@@ -73,11 +75,21 @@ export function FilterSidebar({
       minPrice: filters.minPrice,
       maxPrice: filters.maxPrice,
       sizes: filters.sizes,
+      inStockOnly: filters.inStockOnly,
+      searchQuery: filters.searchQuery,
     }),
-    [filters.category, filters.minPrice, filters.maxPrice, filters.sizes]
+    [
+      filters.category,
+      filters.minPrice,
+      filters.maxPrice,
+      filters.sizes,
+      filters.inStockOnly,
+      filters.searchQuery,
+    ]
   );
 
   const { data: brandCounts = [] } = useBrandCounts(filtersForCounts);
+  const { data: categoriesList = [] } = useCategories();
   const { data: sizesList = [] } = useSizes();
 
   const filteredBrands = useMemo(() => {
@@ -141,6 +153,19 @@ export function FilterSidebar({
       </div>
 
       <div className="p-4">
+        {/* In stock only */}
+        <label className="flex cursor-pointer items-center gap-2 border-b border-brand-border py-4">
+          <input
+            type="checkbox"
+            checked={!!filters.inStockOnly}
+            onChange={(e) =>
+              onFiltersChange({ ...filters, inStockOnly: e.target.checked || undefined })
+            }
+            className="h-4 w-4 rounded border-brand-border text-brand-ink focus:ring-brand-ink"
+          />
+          <span className="text-sm font-medium text-brand-ink">In stock only</span>
+        </label>
+
         {/* Brand */}
         <div className="border-b border-brand-border pb-4">
           <button
@@ -184,6 +209,51 @@ export function FilterSidebar({
                 ))}
               </ul>
             </>
+          )}
+        </div>
+
+        {/* Category */}
+        <div className="border-b border-brand-border py-4">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between py-2 text-left font-medium text-brand-ink"
+            onClick={() => setCategoryOpen((o) => !o)}
+            aria-expanded={categoryOpen}
+          >
+            Category
+            <ChevronUpIcon
+              className={`h-4 w-4 text-brand-muted transition-transform ${categoryOpen ? '' : 'rotate-180'}`}
+            />
+          </button>
+          {categoryOpen && (
+            <ul className="mt-3 space-y-2">
+              <li>
+                <label className="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="radio"
+                    name="category"
+                    checked={!filters.category}
+                    onChange={() => onFiltersChange({ ...filters, category: undefined })}
+                    className="h-4 w-4 border-brand-border text-brand-ink focus:ring-brand-ink"
+                  />
+                  <span className="text-sm text-brand-ink">All</span>
+                </label>
+              </li>
+              {categoriesList.map((category) => (
+                <li key={category}>
+                  <label className="flex cursor-pointer items-center gap-2">
+                    <input
+                      type="radio"
+                      name="category"
+                      checked={filters.category === category}
+                      onChange={() => onFiltersChange({ ...filters, category })}
+                      className="h-4 w-4 border-brand-border text-brand-ink focus:ring-brand-ink"
+                    />
+                    <span className="text-sm text-brand-ink">{category}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
 

@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useFiltersFromUrl } from '@/hooks/use-filters-from-url';
 import { useProducts, usePriceRange } from '@/hooks/use-products';
-import type { ProductFilters } from '@/types/product';
 import { FilterSidebar } from './FilterSidebar';
 import { ProductGrid } from './ProductGrid';
 import { ProductGridSkeleton } from './ProductGridSkeleton';
@@ -58,7 +58,7 @@ export function ProductListingWithFilters({
   id = 'products',
   breadcrumbLabel = 'Clothes',
 }: ProductListingWithFiltersProps) {
-  const [filters, setFilters] = useState<ProductFilters>({});
+  const [filters, setFilters] = useFiltersFromUrl();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const { data: products, isLoading } = useProducts(filters);

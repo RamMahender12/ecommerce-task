@@ -36,6 +36,8 @@ export type ProductFilters = {
   minPrice?: number;
   maxPrice?: number;
   inStockOnly?: boolean;
+  /** Debounced search by product name (synced to URL ?q=) */
+  searchQuery?: string;
 };
 
 export type SortOption = 'price-asc' | 'price-desc' | 'rating' | 'newest';

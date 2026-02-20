@@ -6,6 +6,42 @@ import Link from 'next/link';
 import { useProduct } from '@/hooks/use-products';
 import { useCartStore } from '@/stores/cart';
 
+function ChevronLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  );
+}
+
 type ProductDetailsProps = {
   productId: string;
 };
@@ -13,6 +49,7 @@ type ProductDetailsProps = {
 export function ProductDetails({ productId }: ProductDetailsProps) {
   const { data: product, error, isLoading } = useProduct(productId);
   const [size, setSize] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const addItem = useCartStore((s) => s.addItem);
 
   if (isLoading) {
@@ -47,7 +84,8 @@ export function ProductDetails({ productId }: ProductDetailsProps) {
     );
   }
 
-  const imageSrc = product.images[0] ?? '/placeholder.png';
+  const images = product.images.length > 0 ? product.images : ['/placeholder.png'];
+  const mainImageSrc = images[selectedImageIndex] ?? images[0];
   const canAddToCart = product.inStock && size != null;
 
   const handleAddToCart = () => {
@@ -55,23 +93,81 @@ export function ProductDetails({ productId }: ProductDetailsProps) {
     addItem(product, size);
   };
 
+  const goPrev = () => {
+    setSelectedImageIndex((i) => (i <= 0 ? images.length - 1 : i - 1));
+  };
+  const goNext = () => {
+    setSelectedImageIndex((i) => (i >= images.length - 1 ? 0 : i + 1));
+  };
+
   return (
     <div className="mx-auto max-w-5xl">
       <div className="grid gap-8 md:grid-cols-2">
-        <div className="relative aspect-[3/4] overflow-hidden border border-brand-border bg-brand-border/30">
-          <Image
-            src={imageSrc}
-            alt={product.name}
-            fill
-            className="object-cover"
-            sizes="50vw"
-            priority
-            unoptimized
-          />
-          {product.isNew && (
-            <span className="absolute left-4 top-4 bg-brand-ink px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-brand-surface">
-              New
-            </span>
+        {/* Image gallery: main image + left/right arrows + thumbnails */}
+        <div className="space-y-3">
+          <div className="relative aspect-[3/4] overflow-hidden border border-brand-border bg-brand-border/30">
+            <Image
+              src={mainImageSrc}
+              alt={`${product.name} – image ${selectedImageIndex + 1}`}
+              fill
+              className="object-cover"
+              sizes="50vw"
+              priority
+              unoptimized
+            />
+            {product.isNew && (
+              <span className="absolute left-4 top-4 bg-brand-ink px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-brand-surface">
+                New
+              </span>
+            )}
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={goPrev}
+                  className="absolute left-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-brand-ink shadow-md transition-colors hover:bg-white"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeftIcon className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={goNext}
+                  className="absolute right-2 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-brand-ink shadow-md transition-colors hover:bg-white"
+                  aria-label="Next image"
+                >
+                  <ChevronRightIcon className="h-5 w-5" />
+                </button>
+              </>
+            )}
+          </div>
+          {images.length > 1 && (
+            <ul className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Product images">
+              {images.map((src, i) => (
+                <li key={i}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedImageIndex(i)}
+                    className={`relative h-16 w-16 shrink-0 overflow-hidden rounded border-2 transition-colors ${
+                      selectedImageIndex === i
+                        ? 'border-brand-ink'
+                        : 'border-transparent hover:border-brand-border'
+                    }`}
+                    aria-selected={selectedImageIndex === i}
+                    aria-label={`View image ${i + 1}`}
+                  >
+                    <Image
+                      src={src}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="64px"
+                      unoptimized
+                    />
+                  </button>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
 

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useCartStore } from '@/stores/cart';
 import { Logo } from './Logo';
+import { NavSearch } from './NavSearch';
 
 function SearchIcon({ className }: { className?: string }) {
   return (
@@ -254,15 +255,9 @@ export function Header({ logoImageSrc, logoImageAlt }: HeaderProps) {
             />
           </div>
 
-          {/* Center: Search */}
-          <div className="relative hidden flex-1 max-w-xl md:block">
-            <SearchIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-brand-muted" />
-            <input
-              type="search"
-              placeholder="What are you looking for?"
-              className="w-full rounded-lg border-0 bg-[#f1f5f9] py-2.5 pl-10 pr-4 text-sm text-brand-ink placeholder:text-brand-muted focus:ring-2 focus:ring-brand-ink/20"
-              aria-label="Search products"
-            />
+          {/* Center: Search (debounced, synced to URL ?q=) */}
+          <div className="hidden flex-1 max-w-xl md:block">
+            <NavSearch />
           </div>
 
           {/* Right: Wishlist, Cart, Language, AR, Account */}
@@ -350,17 +345,9 @@ export function Header({ logoImageSrc, logoImageAlt }: HeaderProps) {
           </div>
         </div>
 
-        {/* Mobile: search bar (below main row) */}
+        {/* Mobile: search bar (debounced, synced to URL ?q=) */}
         <div className="border-t border-brand-border px-4 py-2 md:hidden">
-          <div className="relative">
-            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-muted" />
-            <input
-              type="search"
-              placeholder="What are you looking for?"
-              className="w-full rounded-lg bg-[#f1f5f9] py-2 pl-9 pr-3 text-sm text-brand-ink placeholder:text-brand-muted"
-              aria-label="Search products"
-            />
-          </div>
+          <NavSearch inputClassName="py-2 pl-9" />
         </div>
 
         {/* Mobile menu */}
