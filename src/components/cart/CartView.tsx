@@ -9,9 +9,12 @@ export function CartView() {
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        <p>Your cart is empty.</p>
-        <Link href="/" className="mt-4 inline-block text-black hover:underline">
+      <div className="rounded-none border border-brand-border bg-brand-surface py-16 text-center">
+        <p className="text-brand-muted">Your cart is empty.</p>
+        <Link
+          href="/"
+          className="mt-4 inline-block font-medium text-brand-ink hover:underline"
+        >
           Continue shopping
         </Link>
       </div>
@@ -19,13 +22,16 @@ export function CartView() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <ul className="divide-y">
+    <div className="mx-auto max-w-2xl space-y-6">
+      <ul className="divide-y divide-brand-border border border-brand-border bg-brand-surface">
         {items.map((item) => {
           const src = item.product.images[0] ?? '/placeholder.png';
           return (
-            <li key={`${item.product.id}-${item.size}`} className="py-4 flex gap-4">
-              <div className="w-24 h-24 relative shrink-0 rounded overflow-hidden bg-gray-100">
+            <li
+              key={`${item.product.id}-${item.size}`}
+              className="flex gap-4 p-4"
+            >
+              <div className="relative h-24 w-24 shrink-0 overflow-hidden border border-brand-border bg-brand-border/30">
                 <Image
                   src={src}
                   alt={item.product.name}
@@ -35,28 +41,34 @@ export function CartView() {
                   unoptimized
                 />
               </div>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-medium truncate">{item.product.name}</h2>
-                <p className="text-sm text-gray-500">
+              <div className="min-w-0 flex-1">
+                <h2 className="font-display font-medium text-brand-ink truncate">
+                  {item.product.name}
+                </h2>
+                <p className="text-sm text-brand-muted">
                   {item.product.brand} · Size {item.size}
                 </p>
-                <div className="flex items-center gap-2 mt-2">
+                <div className="mt-2 flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() =>
                       updateQuantity(item.product.id, item.size, item.quantity - 1)
                     }
-                    className="w-8 h-8 border rounded flex items-center justify-center text-lg leading-none"
+                    className="flex h-8 w-8 items-center justify-center border border-brand-border text-brand-ink hover:border-brand-muted hover:bg-brand-background"
+                    aria-label="Decrease quantity"
                   >
                     −
                   </button>
-                  <span className="w-8 text-center">{item.quantity}</span>
+                  <span className="w-8 text-center text-sm font-medium">
+                    {item.quantity}
+                  </span>
                   <button
                     type="button"
                     onClick={() =>
                       updateQuantity(item.product.id, item.size, item.quantity + 1)
                     }
-                    className="w-8 h-8 border rounded flex items-center justify-center text-lg leading-none"
+                    className="flex h-8 w-8 items-center justify-center border border-brand-border text-brand-ink hover:border-brand-muted hover:bg-brand-background"
+                    aria-label="Increase quantity"
                   >
                     +
                   </button>
@@ -69,8 +81,8 @@ export function CartView() {
                   </button>
                 </div>
               </div>
-              <div className="text-right shrink-0">
-                <p className="font-medium">
+              <div className="shrink-0 text-right">
+                <p className="font-semibold text-brand-ink">
                   ${(item.product.price * item.quantity).toFixed(2)}
                 </p>
               </div>
@@ -78,13 +90,15 @@ export function CartView() {
           );
         })}
       </ul>
-      <div className="border-t pt-4 flex justify-between items-center">
-        <span className="font-semibold">Total</span>
-        <span className="text-xl font-bold">${total().toFixed(2)}</span>
+      <div className="flex items-center justify-between border-t border-brand-border pt-4">
+        <span className="font-semibold text-brand-ink">Total</span>
+        <span className="font-display text-xl font-semibold text-brand-ink">
+          ${total().toFixed(2)}
+        </span>
       </div>
       <Link
         href="/"
-        className="inline-block text-gray-600 hover:text-gray-900 text-sm"
+        className="inline-block text-sm font-medium text-brand-muted hover:text-brand-ink"
       >
         ← Continue shopping
       </Link>

@@ -1,28 +1,43 @@
 'use client';
 
 import { useProducts } from '@/hooks/use-products';
+import type { ProductFilters, SortOption } from '@/types/product';
 import { ProductCard } from './ProductCard';
 import { ProductGridSkeleton } from './ProductGridSkeleton';
 
-export function ProductGrid() {
-  const { data: products, error, isLoading } = useProducts();
+export type ProductGridProps = {
+  filters?: ProductFilters;
+  sort?: SortOption;
+  /** Optional class for the grid container */
+  className?: string;
+};
+
+export function ProductGrid({ filters, sort, className }: ProductGridProps) {
+  const { data: products, error, isLoading } = useProducts(filters, sort);
 
   if (isLoading) return <ProductGridSkeleton />;
   if (error) {
     return (
-      <div className="text-red-600 py-8 text-center">
+      <div className="rounded-md border border-red-200 bg-red-50 py-8 text-center text-red-700">
         Failed to load products. Please try again.
       </div>
     );
   }
   if (!products?.length) {
     return (
-      <div className="text-gray-500 py-8 text-center">No products found.</div>
+      <div className="py-12 text-center text-brand-muted">
+        No products found.
+      </div>
     );
   }
 
   return (
-    <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <ul
+      className={
+        className ??
+        'grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+      }
+    >
       {products.map((product) => (
         <li key={product.id}>
           <ProductCard product={product} />

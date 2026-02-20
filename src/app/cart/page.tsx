@@ -2,9 +2,14 @@ import { CartView } from '@/components/cart/CartView';
 
 export default function CartPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Your Cart</h1>
-      <CartView />
+    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <h1 className="font-display text-2xl font-semibold tracking-tight text-brand-ink sm:text-3xl">
+        Your cart
+      </h1>
+      <p className="mt-1 text-brand-muted">Review and update your items.</p>
+      <div className="mt-8">
+        <CartView />
+      </div>
     </div>
   );
 }

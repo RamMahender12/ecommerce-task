@@ -14,41 +14,47 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link
       href={`/products/${product.id}`}
-      className="group block border rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow"
+      className="group block overflow-hidden rounded-none border border-brand-border bg-brand-surface transition-shadow hover:shadow-md"
     >
-      <div className="aspect-[3/4] relative bg-gray-100">
+      <div className="aspect-[3/4] relative bg-brand-border/30">
         <Image
           src={imageSrc}
           alt={product.name}
           fill
-          className="object-cover group-hover:scale-105 transition-transform"
-          sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           unoptimized
         />
         {product.isNew && (
-          <span className="absolute top-2 left-2 bg-black text-white text-xs px-2 py-1 rounded">
+          <span className="absolute left-3 top-3 bg-brand-ink px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-brand-surface">
             New
           </span>
         )}
         {!product.inStock && (
-          <span className="absolute inset-0 bg-white/60 flex items-center justify-center text-gray-700 font-medium">
+          <span className="absolute inset-0 flex items-center justify-center bg-brand-surface/80 text-brand-muted font-medium">
             Out of stock
           </span>
         )}
       </div>
-      <div className="p-3">
-        <p className="text-xs text-gray-500">{product.brand}</p>
-        <h2 className="font-medium truncate">{product.name}</h2>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="font-semibold">${product.price.toFixed(2)}</span>
+      <div className="border-t border-brand-border p-4">
+        <p className="text-xs font-medium uppercase tracking-wider text-brand-muted">
+          {product.brand}
+        </p>
+        <h2 className="mt-1 font-display text-base font-medium text-brand-ink line-clamp-2">
+          {product.name}
+        </h2>
+        <div className="mt-2 flex items-baseline gap-2">
+          <span className="font-semibold text-brand-ink">
+            ${product.price.toFixed(2)}
+          </span>
           {product.originalPrice != null && (
-            <span className="text-sm text-gray-400 line-through">
+            <span className="text-sm text-brand-muted line-through">
               ${product.originalPrice.toFixed(2)}
             </span>
           )}
         </div>
-        <p className="text-xs text-gray-500 mt-1">
-          ★ {product.rating} ({product.reviewCount})
+        <p className="mt-1 text-xs text-brand-muted">
+          ★ {product.rating} ({product.reviewCount} reviews)
         </p>
       </div>
     </Link>

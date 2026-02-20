@@ -27,7 +27,12 @@ export type CartItem = {
 /** Filter/sort options for product listing */
 export type ProductFilters = {
   category?: string;
+  /** Single brand (legacy) */
   brand?: string;
+  /** Multiple brands (checkboxes) */
+  brands?: string[];
+  /** Sizes to filter by (product must have at least one) */
+  sizes?: string[];
   minPrice?: number;
   maxPrice?: number;
   inStockOnly?: boolean;
