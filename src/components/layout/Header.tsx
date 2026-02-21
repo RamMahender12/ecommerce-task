@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore, type AuthState } from '@/stores/auth';
 import { useCartStore } from '@/stores/cart';
 import { Logo } from './Logo';
 import { NavSearch } from './NavSearch';
@@ -81,8 +81,8 @@ export function Header({ logoImageSrc, logoImageAlt }: HeaderProps) {
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const itemCount = useCartStore((s) => s.itemCount());
-  const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
+  const user = useAuthStore((s: AuthState) => s.user);
+  const logout = useAuthStore((s: AuthState) => s.logout);
 
   const handleLogout = () => {
     logout();
@@ -121,7 +121,9 @@ export function Header({ logoImageSrc, logoImageAlt }: HeaderProps) {
         {/* Center: Search – takes remaining space, visually centered (desktop) */}
         <div className="hidden min-w-0 flex-1 justify-center px-6 md:flex">
           <div className="w-full max-w-md lg:max-w-xl">
-            <NavSearch />
+            <Suspense fallback={<div className="h-10 rounded-lg bg-[#f1f5f9] dark:bg-gray-800" />}>
+              <NavSearch />
+            </Suspense>
           </div>
         </div>
 

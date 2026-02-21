@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import {
   FeatureStrip,
@@ -15,7 +16,9 @@ export default function HomePage() {
         scrollToId="#products"
       />
 
-      <ProductListingWithFilters id="products" breadcrumbLabel="Clothes" />
+      <Suspense fallback={<div className="min-h-[40vh]" />}>
+        <ProductListingWithFilters id="products" breadcrumbLabel="Clothes" />
+      </Suspense>
 
       <FeatureStrip id="features" items={defaultFeatureItems} />
     </ProtectedRoute>

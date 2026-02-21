@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { CartItem, Product } from '@/types/product';
 
 type CartState = {
@@ -66,7 +66,7 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: 'cart-storage',
-      getStorage: () => localStorage,
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ items: state.items }),
     }
   )

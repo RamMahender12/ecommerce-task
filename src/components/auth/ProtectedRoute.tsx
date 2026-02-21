@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore, type AuthState } from '@/stores/auth';
 
 type ProtectedRouteProps = {
   children: React.ReactNode;
@@ -17,7 +17,7 @@ const RedirectingPlaceholder = () => (
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const user = useAuthStore((s) => s.user);
+  const user = useAuthStore((s: AuthState) => s.user);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
