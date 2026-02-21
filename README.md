@@ -2,14 +2,38 @@
 
 Next.js 14 + TypeScript + Tailwind CSS assessment project.
 
+This README covers:
+
+- **[Setup instructions](#setup)** — How to install and run the project locally.
+- **[Architecture decisions and tradeoffs](#architecture-decisions-and-tradeoffs)** — Folder structure, URL-synced filters, product page vs modal, cart, pagination.
+- **[What we would improve with more time](#what-we-would-improve-with-more-time)** — Tests, error handling, accessibility, and other follow-ups.
+- **[Assumptions](#assumptions)** — Scope and constraints assumed for this implementation.
+
+---
+
 ## Setup
 
+**Prerequisites:** Node.js 18+ (LTS recommended).
+
 ```bash
+# Install dependencies
 npm install
+
+# Run development server
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+**Other commands:**
+
+```bash
+npm run build   # Production build (e.g. for Netlify/Vercel)
+npm run start   # Run production server after build
+npm run lint    # Run ESLint
+```
+
+**Demo login:** Use `user@example.com` / `password123` to access protected routes (home, product detail, cart).
 
 ## Tech
 
@@ -193,17 +217,21 @@ So we chose **pagination** and justified it in the README as above.
 
 ## What we would improve with more time
 
-- **Tests** — Unit tests for hooks and services; a few integration tests for critical flows.
-- **Error retry** — Retry button or automatic retry for failed SWR requests.
-- **Accessibility** — Full keyboard and screen-reader pass, focus trapping in modals if added.
+- **Tests** — Unit tests for hooks (`useFiltersFromUrl`, `usePagination`, `useProducts`) and services; integration tests for login, add-to-cart, and filter flows; optional E2E for critical paths.
+- **Error handling** — Retry button or automatic retry for failed SWR requests; clearer error messages and recovery actions on product/cart errors.
+- **Accessibility** — Full keyboard and screen-reader pass (ARIA, focus order, skip links); focus trapping in the mobile filter drawer; reduced-motion respect for Framer Motion.
+- **Performance** — Virtualized list for very long product grids; image blur placeholders or stricter `sizes` for Next.js `Image`; consider React Compiler or selective memoization audit.
+- **UX** — Cart drawer or mini-cart in header as an alternative to cart page; “Back to top” when paginating; optional “Recently viewed” or wishlist.
+- **DevEx** — Storybook for shared components; env-based feature flags if we add A/B or gradual rollout.
 
 ## Assumptions
 
-- Mock product set is small; pagination is implemented (12 per page, URL `?page=`).
-- “Category” in filters is single-select (one category at a time); multi-select could be added.
-- No real backend; all “API” calls go through `withMockNetwork()` with an artificial delay.
-- Cart stores full `Product` objects in each line item so the cart page can show details without refetching.
-- Search is by product name only; extending to brand/description would be a service change.
+- **Scope** — This is a frontend-only assessment; no real backend. All “API” calls go through `withMockNetwork()` with an artificial delay; auth is demo-only (single fixed credential).
+- **Data** — Mock product set is small; pagination is implemented (e.g. 4–12 per page in code, URL `?page=`). Category in filters is single-select; multi-select could be added later.
+- **Cart** — Cart stores full `Product` objects in each line item so the cart page can show name, image, and price without refetching. No server-side cart sync.
+- **Search** — Search is by product name only; extending to brand or description would be a service/mock-data change.
+- **Theme** — Default theme is light; `next-themes` with `enableSystem` allows user and system preference override.
+- **Browsers** — Modern evergreen browsers; no specific support for legacy browsers unless required.
 
 ## Structure
 
