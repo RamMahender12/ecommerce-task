@@ -136,7 +136,7 @@ export function FilterSidebar({
 
   return (
     <aside
-      className={`w-full shrink-0 border border-brand-border bg-brand-surface lg:w-72 ${className}`}
+      className={`w-full max-w-full shrink-0 border border-brand-border bg-brand-surface ${className}`}
       aria-label="Filters"
     >
       {/* Header: Filter | Advanced */}

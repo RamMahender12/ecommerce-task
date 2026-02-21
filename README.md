@@ -15,15 +15,18 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - **Next.js 14** (App Router)
 - **TypeScript** (strict)
-- **Tailwind CSS**
-- **Zustand** (cart state, persisted to localStorage)
+- **Tailwind CSS** (with dark mode via `next-themes`)
+- **Zustand** (cart + auth + toast; cart persisted to localStorage)
 - **SWR** (product data; mock service with delay + optional errors)
+- **Framer Motion** (mobile filter drawer animation)
+- **next-themes** (theme toggle, system preference support)
 
 ## Routes
 
-- `/` — Home: hero banner, product listing with URL-synced filters and search
-- `/products/[id]` — Product detail + add to cart
-- `/cart` — Cart view
+- `/` — Home: hero banner, product listing with URL-synced filters, search, pagination
+- `/products/[id]` — Product detail with image gallery + add to cart (protected)
+- `/cart` — Cart view (protected)
+- `/login` — Login with validation; redirects to `?from=` after success
 
 ## Architecture decisions and tradeoffs
 
@@ -31,18 +34,40 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - **`app/`** — Routes and layout only; minimal logic.
 - **`components/`** — UI only; receive data and callbacks via props. Split into `layout/`, `product/`, `cart/`.
-- **`hooks/`** — Data and URL state: `use-products`, `use-filters-from-url`. Keeps components thin.
+- **`hooks/`** — Data and URL state: `use-products`, `use-filters-from-url`, `use-pagination`. Keeps components thin.
 - **`services/`** — Mock API: `getProducts`, `getProductById`, `getCategories`, etc., with `withMockNetwork()` for delay and optional errors.
-- **`stores/`** — Zustand cart store (persisted to localStorage via `persist` middleware).
+- **`stores/`** — Zustand: cart (persisted), auth (persisted), toast (ephemeral).
 - **`types/`** — Shared TypeScript types for Product, CartItem, ProductFilters.
 
 Tradeoff: no dedicated “repository” layer; services are the single place that touch mock data. Keeps the stack small while preserving a clear boundary.
 
 ### Product listing: filters and search
 
-- **URL-synced filters** — All filters (brand, category, price, size, in-stock, search) are encoded in the query string (`?q=...&brands=...&category=...`). Implemented via `useFiltersFromUrl()` so filters survive refresh and are shareable.
+- **URL-synced filters** — All filters are encoded in the query string so they **survive page refresh** and are **shareable via URL**. Implemented in `useFiltersFromUrl()` (`src/hooks/use-filters-from-url.ts`). Changing any filter (search, brand, category, price, size, in-stock) updates the URL; loading or sharing that URL restores the same filtered view.
+
+  **Query parameters:**
+
+  | Param        | Example    | Description                          |
+  |-------------|------------|--------------------------------------|
+  | `q`         | `hoodie`   | Search by product name               |
+  | `brands`    | `ComfortCo,BasicWear` | Comma-separated brands      |
+  | `category`  | `Hoodies`  | Single category                      |
+  | `minPrice`  | `50`       | Minimum price                        |
+  | `maxPrice`  | `100`      | Maximum price                        |
+  | `inStockOnly` | `1`      | In-stock only                        |
+  | `sizes`     | `M,L`      | Comma-separated sizes                |
+  | `page`      | `2`        | Pagination (from `usePagination`)   |
+
+  **Example URL** (search “cotton”, category Hoodies, in stock only, page 2):
+
+  ```
+  /?q=cotton&category=Hoodies&inStockOnly=1&page=2
+  ```
+
+  Opening or refreshing that URL shows the same filtered list and page.
+
 - **Debounced search** — Navbar search updates the `q` param after 300ms to avoid excessive URL updates and refetches.
-- **Sidebar on desktop** — Filters live in a left sidebar; on mobile they appear in the same column (drawer could be added later).
+- **Sidebar on desktop, drawer on mobile** — Filters in a left sidebar on large screens; on mobile a “Filters” button opens a slide-over drawer (animated with Framer Motion).
 
 ### Product detail: page vs modal
 
@@ -56,28 +81,125 @@ Tradeoff: no dedicated “repository” layer; services are the single place tha
 - **Zustand** with `persist` middleware so the cart is stored in localStorage and survives refresh.
 - **Cart page** (not a drawer) for a full view and simpler state flow; a drawer could be added as an alternative entry point.
 
-### Pagination vs infinite scroll
+### Pagination (choice over infinite scroll)
 
-- **Current:** No pagination or infinite scroll; the product list shows all results (mock set is small).
-- **With more time:** We would add **pagination** (e.g. `page` and `pageSize` in the URL) because:
-  - Pagination gives a clear “page N” and total count, which fits filtered lists and SEO.
-  - Infinite scroll can cause layout jumps and harder “back to results” behavior.
-  - A custom `usePagination` hook could wrap `useProducts` and manage `page` in the URL.
+We implemented **pagination** and documented why we chose it over infinite scroll:
+
+- **Implemented:** URL-synced `?page=` (1-based), custom `usePagination` hook (`src/hooks/use-pagination.ts`), 12 items per page. “Previous / Page N of M / Next” controls below the product grid. Page resets to 1 when filters change.
+
+- **Why pagination over infinite scroll:**
+  - **Shareable URLs** — A link like `?page=2&category=Hoodies` takes you to a specific page; infinite scroll has no stable “page” in the URL.
+  - **Clear context** — Users see “Page 2 of 3” and total result count; with infinite scroll, “how many results?” and “how far through the list?” are unclear.
+  - **Filtered lists** — After changing filters, jumping to “page 1” is obvious; with infinite scroll, “load more” can be confusing (new filter = new list vs append).
+  - **SEO and accessibility** — Pagination gives discrete pages for crawlers and screen-reader users; infinite scroll is harder to navigate and can cause focus/scroll issues.
+  - **No layout jumps** — “Load more” or scroll-loading can shift content and the footer; pagination keeps a stable viewport.
+
+So we chose **pagination** and justified it in the README as above.
+
+## Implemented features
+
+- **Auth flow** — Login page with email/password validation, persisted auth (Zustand + localStorage), protected routes (home, cart, product detail), logout and “Login” / “Account” in header; redirect to `?from=` after login.
+- **Product grid with URL-synced filters** — Filters (search, brand, category, price, size, in-stock) and pagination live in the URL; refresh and share links keep the same view (see [Product listing: filters and search](#product-listing-filters-and-search) for params and example).
+- **Pagination** — URL-synced `?page=`, custom `usePagination` hook, “Previous / Page N of M / Next” controls.
+- **Product image gallery** — Multiple images on PDP with main image, thumbnails, and left/right arrows.
+- **Sidebar filters on desktop, drawer on mobile** — Filters in a left sidebar on large screens; on mobile, a “Filters” button opens a slide-over drawer (Framer Motion) with “Done” to close.
+- **Skeleton loading states** — Product grid and filter sidebar skeletons while the listing loads; product detail page skeleton while the PDP loads.
+- **Optimistic cart UI** — “Add to cart” shows an “Added to cart” toast; cart count updates immediately.
+- **Bonus:** `usePagination` hook, Framer Motion on the filter drawer, dark mode (theme toggle in header, `next-themes`, Tailwind `dark:`).
+
+## Requirements checklist (spec coverage)
+
+### 1. Auth flow
+| Requirement | Status | Location |
+|-------------|--------|----------|
+| Login page with form validation (email format, password min length) | ✅ | `src/app/login/page.tsx` |
+| Persist auth across refresh (localStorage) | ✅ | `src/stores/auth.ts` (Zustand persist) |
+| Protected routes, redirect to login if unauthenticated | ✅ | `ProtectedRoute` wraps `/`, `/cart`, `/products/[id]` |
+| Logout clears state and redirects | ✅ | Header user dropdown + `auth.logout()` |
+
+### 2. Product listing page
+| Requirement | Status | Location |
+|-------------|--------|----------|
+| Navbar: logo, search, cart with badge, user dropdown | ✅ | `src/components/layout/Header.tsx` |
+| Hero banner | ✅ | Home page → `HeroBanner` |
+| Product grid with URL-synced filters | ✅ | `useFiltersFromUrl`, README example |
+| Sidebar filters (desktop), drawer (mobile) | ✅ | `ProductListingWithFilters` + `FilterSidebar` |
+| Skeleton loading states | ✅ | `ProductGridSkeleton`, `FilterSidebarSkeleton`, PDP skeleton |
+| Empty state when no products match | ✅ | `ProductGrid`: "No products found." |
+| Filters: Brand (multi), Price range, Category, In stock only, Size | ✅ | `FilterSidebar`, all sync to URL |
+| Debounced search by name, synced to URL | ✅ | `NavSearch` (300ms), `?q=` |
+| Pagination (justified in README) | ✅ | `usePagination`, "Pagination (choice over infinite scroll)" |
+| Optimistic UI on cart add | ✅ | Toast "Added to cart" + cart count updates |
+
+### 3. Product modal or page
+| Requirement | Status | Location |
+|-------------|--------|----------|
+| Dedicated page (justified in README) | ✅ | "Product detail: page vs modal" section |
+| Image gallery (multiple images) | ✅ | `ProductDetails`: main image, thumbnails, arrows |
+| Size selector | ✅ | `ProductDetails`: size buttons |
+| Add to cart with size validation | ✅ | Disabled until size selected; `canAddToCart` |
+| Loading and error states | ✅ | Skeleton + "Failed to load" / "Product not found." |
+
+### 4. Cart
+| Requirement | Status | Location |
+|-------------|--------|----------|
+| Persisted to localStorage | ✅ | `src/stores/cart.ts` (Zustand persist) |
+| Add, remove, update quantity | ✅ | `addItem`, `removeItem`, `updateQuantity` |
+| Cart page (not drawer) | ✅ | `/cart` page, `CartView` |
+| Show total price | ✅ | `CartView`: `total().toFixed(2)` |
+
+### Code architecture
+| Requirement | Status | Location |
+|-------------|--------|----------|
+| Folder structure, separation of concerns | ✅ | `app/`, `components/`, `hooks/`, `services/`, `stores/`, `types/` |
+| Custom hooks: useFilters, useCart, useProducts | ✅ | `useFiltersFromUrl`, `useCartStore` (store), `useProducts` |
+| Service/repository layer over mock data | ✅ | `src/services/products/`, `withMockNetwork` in `api.ts` |
+| No business logic in components | ✅ | Logic in hooks and services |
+
+### TypeScript
+| Requirement | Status | Location |
+|-------------|--------|----------|
+| Strict mode, no `any` | ✅ | `tsconfig.json`: `"strict": true` |
+| Proper generics where relevant | ✅ | e.g. `useProducts`, `ProductFilters` |
+| Discriminated unions for states | ⚠️ | SWR used; loading/error/success handled via `isLoading`, `error`, `data` (not a single union type) |
+
+### Performance
+| Requirement | Status | Location |
+|-------------|--------|----------|
+| useMemo for expensive filter computations | ✅ | `use-filters-from-url`, `FilterSidebar`, `ProductListingWithFilters` |
+| useCallback on stable references | ✅ | `useFiltersFromUrl`, `usePagination`, `NavSearch` |
+| No unnecessary re-renders | ✅ | Selective store subscriptions, stable callbacks |
+| Lazy load product images | ✅ | Next.js `Image` (lazy by default), used in `ProductCard`, `ProductDetails`, `CartView` |
+
+### Error handling
+| Requirement | Status | Location |
+|-------------|--------|----------|
+| Handle simulated fetch failures | ✅ | `withMockNetwork` throws; SWR catches |
+| User-facing error states | ✅ | `ProductGrid` and `ProductDetails` show error UI, not just console |
+
+### Bonus
+| Requirement | Status | Location |
+|-------------|--------|----------|
+| Custom usePagination or useInfiniteScroll | ✅ | `src/hooks/use-pagination.ts` |
+| Animate filter drawer with Framer Motion | ✅ | Mobile drawer: `AnimatePresence`, `motion.div` |
+| Dark mode support | ✅ | `next-themes`, `ThemeToggle`, Tailwind `dark:` |
+
+### Submission
+| Requirement | Status |
+|-------------|--------|
+| GitHub repo (commit history matters) | Repo |
+| Live link (Vercel or Netlify) | Deploy |
+| README: setup, architecture, improve, assumptions | ✅ This README |
 
 ## What we would improve with more time
 
-- **Auth flow** — Login page with validation, persisted auth (e.g. localStorage or cookie), protected routes, logout.
-- **Pagination or infinite scroll** — As above, with URL-synced `page` and a `usePagination` hook.
-- **Product image gallery** — Multiple images on the product page with thumbnails and optional zoom.
-- **Mobile filter drawer** — Slide-over drawer for filters on small screens instead of inline sidebar.
-- **Optimistic cart UI** — Optimistic update on “Add to cart” (e.g. badge + toast) before the request completes.
 - **Tests** — Unit tests for hooks and services; a few integration tests for critical flows.
 - **Error retry** — Retry button or automatic retry for failed SWR requests.
 - **Accessibility** — Full keyboard and screen-reader pass, focus trapping in modals if added.
 
 ## Assumptions
 
-- Mock product set is small; pagination is deferred.
+- Mock product set is small; pagination is implemented (12 per page, URL `?page=`).
 - “Category” in filters is single-select (one category at a time); multi-select could be added.
 - No real backend; all “API” calls go through `withMockNetwork()` with an artificial delay.
 - Cart stores full `Product` objects in each line item so the cart page can show details without refetching.
@@ -85,4 +207,4 @@ Tradeoff: no dedicated “repository” layer; services are the single place tha
 
 ## Structure
 
-See **[STRUCTURE.md](./STRUCTURE.md)** for folder layout and **[ASSESSMENT.md](./ASSESSMENT.md)** for the requirements checklist.
+Folder layout: `app/` (routes), `components/` (layout, product, cart, auth, ui), `hooks/`, `services/`, `stores/`, `types/`. See [Requirements checklist](#requirements-checklist-spec-coverage) above for spec coverage.

@@ -61,7 +61,7 @@ export function NavSearch({
       else params.delete(PARAM_Q);
       const query = params.toString();
       const url = query ? `${pathname}?${query}` : pathname;
-      router.replace(url);
+      router.replace(url, { scroll: false });
     }, DEBOUNCE_MS);
     return () => clearTimeout(t);
   }, [localValue, pathname, router, searchParams]);

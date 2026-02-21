@@ -11,10 +11,7 @@
 /.next/
 out/
 
-# misc (keep planning/agent docs out of repo for submission)
-ASSESSMENT.md
-STRUCTURE.md
-COMMIT_STRATEGY.md
+# misc
 .DS_Store
 *.pem
 .env*.local

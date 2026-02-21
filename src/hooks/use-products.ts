@@ -25,8 +25,16 @@ function brandCountsKey(filters?: Omit<ProductFilters, 'brands'>) {
   return [BRAND_COUNTS_KEY, filters ?? {}] as const;
 }
 
-export function useProducts(filters?: ProductFilters, sort?: SortOption) {
-  return useSWR(productListKey(filters, sort), () => getProducts(filters, sort));
+export type UseProductsOptions = { skip?: boolean };
+
+export function useProducts(
+  filters?: ProductFilters,
+  sort?: SortOption,
+  options?: UseProductsOptions
+) {
+  const key =
+    options?.skip === true ? null : productListKey(filters ?? undefined, sort);
+  return useSWR(key, key ? () => getProducts(filters, sort) : () => null);
 }
 
 export function useProduct(id: string | null) {

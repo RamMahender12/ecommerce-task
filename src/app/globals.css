@@ -4,6 +4,6 @@
 
 @layer base {
   body {
-    @apply bg-brand-background text-brand-ink font-body;
+    @apply bg-brand-background text-brand-ink font-body dark:bg-gray-900 dark:text-gray-100;
   }
 }

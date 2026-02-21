@@ -1,47 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/stores/auth';
 import { useCartStore } from '@/stores/cart';
 import { Logo } from './Logo';
 import { NavSearch } from './NavSearch';
-
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.35-4.35" />
-    </svg>
-  );
-}
-
-function HeartIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-    </svg>
-  );
-}
+import { ThemeToggle } from './ThemeToggle';
 
 function CartIcon({ className }: { className?: string }) {
   return (
@@ -82,297 +48,154 @@ function ChevronDownIcon({ className }: { className?: string }) {
   );
 }
 
-function MenuIcon({ className }: { className?: string }) {
+function UserIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      width="24"
-      height="24"
+      width="22"
+      height="22"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
     >
-      <path d="M4 6h16M4 12h16M4 18h16" />
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
     </svg>
   );
 }
-
-function CloseIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M18 6 6 18M6 6l12 12" />
-    </svg>
-  );
-}
-
-const mainNavLinks = [
-  { label: 'Shop', href: '/' },
-  { label: 'Cart', href: '/cart' },
-] as const;
 
 const NAV_BADGE_CLASS =
   'absolute -right-1.5 -top-1.5 flex h-4 min-w-[18px] items-center justify-center rounded-full bg-[#0ea5e9] px-1 text-[10px] font-medium leading-none text-white';
 
 export type HeaderProps = {
-  /** Logo image URL (e.g. /logo.svg from Figma 74-1154 export). Omit to use text logo. */
   logoImageSrc?: string;
-  /** Alt text for logo image */
   logoImageAlt?: string;
 };
 
-function TopStrip() {
-  return (
-    <div
-      className="border-b border-brand-border bg-[#2d3748] text-brand-surface"
-      role="region"
-      aria-label="Shipping and services"
-    >
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
-        {/* Left: Ship to KSA */}
-        <button
-          type="button"
-          className="flex items-center gap-2 rounded bg-[#eab308] px-3 py-1.5 text-sm font-medium text-[#1a1a1a] shadow-sm hover:bg-[#ca9a04]"
-          aria-label="Ship to KSA"
-        >
-          <span className="text-base leading-none" aria-hidden>
-            🇸🇦
-          </span>
-          <span>Ship to KSA</span>
-        </button>
-
-        {/* Right: Trusted Shipping, Easy Returns, Secure Shopping */}
-        <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-brand-surface/95 sm:gap-8">
-          <span className="flex items-center gap-1.5">
-            <TruckIconSmall className="h-4 w-4 shrink-0" />
-            Trusted Shipping
-          </span>
-          <span className="flex items-center gap-1.5">
-            <RefreshIconSmall className="h-4 w-4 shrink-0" />
-            Easy Returns
-          </span>
-          <span className="flex items-center gap-1.5">
-            <ShieldIconSmall className="h-4 w-4 shrink-0" />
-            Secure Shopping
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TruckIconSmall({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
-      <path d="M15 18h2" />
-      <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
-    </svg>
-  );
-}
-
-function RefreshIconSmall({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-      <path d="M3 3v5h5" />
-    </svg>
-  );
-}
-
-function ShieldIconSmall({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    </svg>
-  );
-}
-
-/**
- * Navbar – Figma node 74-1153.
- * Top strip (ship to + trust/returns/secure) above main navbar.
- */
 export function Header({ logoImageSrc, logoImageAlt }: HeaderProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
+  const userDropdownRef = useRef<HTMLDivElement>(null);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const itemCount = useCartStore((s) => s.itemCount());
-  const wishlistCount = 0; // TODO: wire to wishlist store when available
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+
+  const handleLogout = () => {
+    logout();
+    router.replace('/');
+    setUserDropdownOpen(false);
+  };
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        userDropdownRef.current &&
+        !userDropdownRef.current.contains(event.target as Node)
+      ) {
+        setUserDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
-    <>
-      {/* Top strip – above navbar (Figma 74-1153) */}
-      <TopStrip />
+    <header
+      className="sticky top-0 z-50 border-b border-brand-border bg-brand-surface dark:border-gray-800 dark:bg-gray-900"
+      role="banner"
+    >
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-4 sm:px-8 lg:px-12">
+        {/* Left: Logo */}
+        <div className="flex shrink-0 items-center">
+          <Logo
+            imageSrc={logoImageSrc}
+            imageAlt={logoImageAlt}
+            className="text-[#0ea5e9] hover:text-[#0284c7]"
+          />
+        </div>
 
-      {/* Main navbar – Figma 74-1153 (logo, search, wishlist, cart, language, account) */}
-      <header
-        className="sticky top-0 z-50 border-b border-brand-border bg-brand-surface"
-        role="banner"
-      >
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-          {/* Logo (light blue in reference) */}
-          <div className="shrink-0">
-            <Logo
-              imageSrc={logoImageSrc}
-              imageAlt={logoImageAlt}
-              className="text-[#0ea5e9] hover:text-[#0284c7]"
-            />
-          </div>
-
-          {/* Center: Search (debounced, synced to URL ?q=) */}
-          <div className="hidden flex-1 max-w-xl md:block">
+        {/* Center: Search – takes remaining space, visually centered (desktop) */}
+        <div className="hidden min-w-0 flex-1 justify-center px-6 md:flex">
+          <div className="w-full max-w-md lg:max-w-xl">
             <NavSearch />
           </div>
+        </div>
 
-          {/* Right: Wishlist, Cart, Language, AR, Account */}
-          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-            {/* Wishlist */}
-            <Link
-              href="/"
-              className="relative hidden items-center justify-center p-2 text-brand-ink hover:text-brand-muted sm:flex"
-              aria-label={wishlistCount > 0 ? `Wishlist, ${wishlistCount} items` : 'Wishlist'}
-            >
-              <HeartIcon className="h-6 w-6" />
-              {wishlistCount > 0 && (
-                <span className={NAV_BADGE_CLASS}>{wishlistCount}</span>
-              )}
-            </Link>
+        {/* Spacer on mobile so right group aligns to the end */}
+        <div className="min-w-0 flex-1 md:hidden" aria-hidden />
 
-            {/* Cart */}
-            <Link
-              href="/cart"
-              className="relative flex items-center justify-center p-2 text-brand-ink transition-colors hover:text-brand-muted"
-              aria-label={itemCount > 0 ? `Cart, ${itemCount} items` : 'Cart'}
-            >
-              <CartIcon className="h-6 w-6" />
-              <span className={NAV_BADGE_CLASS} aria-hidden>
-                {itemCount}
-              </span>
-            </Link>
+        {/* Right: Cart + User on desktop; User only on mobile (right corner) */}
+        <div className="flex shrink-0 items-center gap-4 sm:gap-6">
+          <Link
+            href="/cart"
+            className="relative hidden items-center justify-center p-2.5 text-brand-ink transition-colors hover:text-brand-muted md:flex"
+            aria-label={itemCount > 0 ? `Cart, ${itemCount} items` : 'Cart'}
+          >
+            <CartIcon className="h-6 w-6" />
+            <span className={NAV_BADGE_CLASS} aria-hidden>
+              {itemCount}
+            </span>
+          </Link>
 
-            {/* Language */}
+          <ThemeToggle />
+
+          {/* User dropdown – right corner on mobile, after cart on desktop */}
+          <div className="relative" ref={userDropdownRef}>
             <button
               type="button"
-              className="hidden items-center gap-1.5 rounded px-2 py-1.5 text-sm text-brand-ink hover:bg-brand-background sm:flex"
-              aria-haspopup="listbox"
-              aria-label="Language"
+              onClick={() => setUserDropdownOpen((o) => !o)}
+              className="flex items-center gap-1.5 rounded p-2.5 text-brand-ink hover:bg-brand-background dark:hover:bg-gray-800"
+              aria-expanded={userDropdownOpen}
+              aria-haspopup="true"
+              aria-label="User menu"
             >
-              <span aria-hidden>🇺🇸</span>
-              <span>English</span>
+              <UserIcon className="h-6 w-6" />
               <ChevronDownIcon className="h-4 w-4 text-brand-muted" />
             </button>
 
-            {/* AR */}
-            <button
-              type="button"
-              className="hidden rounded-full border border-brand-ink px-3 py-1.5 text-sm font-medium text-brand-ink hover:bg-brand-background lg:inline-flex"
-            >
-              AR
-            </button>
-
-            {/* Account */}
-            <button
-              type="button"
-              className="hidden items-center gap-1 rounded px-2 py-1.5 text-sm font-medium text-brand-ink hover:bg-brand-background lg:flex"
-              aria-haspopup="menu"
-              aria-label="Account menu"
-            >
-              Account
-              <ChevronDownIcon className="h-4 w-4 text-brand-muted" />
-            </button>
-          </div>
-
-          {/* Mobile: search toggle + cart + menu */}
-          <div className="flex shrink-0 items-center gap-1 md:hidden">
-            <Link
-              href="/cart"
-              className="relative flex items-center justify-center p-2 text-brand-ink"
-              aria-label={itemCount > 0 ? `Cart, ${itemCount} items` : 'Cart'}
-            >
-              <CartIcon className="h-6 w-6" />
-              <span className={NAV_BADGE_CLASS}>{itemCount}</span>
-            </Link>
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen((o) => !o)}
-              className="flex items-center justify-center p-2 text-brand-ink"
-              aria-expanded={mobileMenuOpen}
-              aria-controls="mobile-nav"
-              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-            >
-              {mobileMenuOpen ? (
-                <CloseIcon className="h-6 w-6" />
-              ) : (
-                <MenuIcon className="h-6 w-6" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile: search bar (debounced, synced to URL ?q=) */}
-        <div className="border-t border-brand-border px-4 py-2 md:hidden">
-          <NavSearch inputClassName="py-2 pl-9" />
-        </div>
-
-        {/* Mobile menu */}
-        <div
-          id="mobile-nav"
-          className={`border-t border-brand-border bg-brand-surface md:hidden ${mobileMenuOpen ? 'block' : 'hidden'}`}
-          aria-hidden={!mobileMenuOpen}
-        >
-          <nav className="px-4 py-4" aria-label="Mobile navigation">
-            <ul className="space-y-0.5">
-              {mainNavLinks.map(({ label, href }) => (
-                <li key={href}>
+            {userDropdownOpen && (
+              <div
+                className="absolute right-0 top-full z-50 mt-1 min-w-[180px] rounded-md border border-brand-border bg-brand-surface py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900"
+                role="menu"
+              >
+                {user ? (
+                  <>
+                    <div className="border-b border-brand-border px-4 py-2 dark:border-gray-700" role="none">
+                      <p className="truncate text-sm font-medium text-brand-ink dark:text-gray-100">
+                        {user.name ?? user.email}
+                      </p>
+                      <p className="truncate text-xs text-brand-muted dark:text-gray-400">
+                        {user.email}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="w-full px-4 py-2 text-left text-sm text-brand-ink hover:bg-brand-background dark:hover:bg-gray-800"
+                      role="menuitem"
+                    >
+                      Log out
+                    </button>
+                  </>
+                ) : (
                   <Link
-                    href={href}
-                    className="block rounded-md px-3 py-2.5 text-base font-medium text-brand-ink hover:bg-brand-background"
-                    onClick={() => setMobileMenuOpen(false)}
+                    href="/login"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="block px-4 py-2 text-sm text-brand-ink hover:bg-brand-background dark:hover:bg-gray-800"
+                    role="menuitem"
                   >
-                    {label}
+                    Login
                   </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </header>
-    </>
+      </div>
+    </header>
   );
 }

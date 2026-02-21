@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useProduct } from '@/hooks/use-products';
 import { useCartStore } from '@/stores/cart';
+import { useToastStore } from '@/stores/toast';
 
 function ChevronLeftIcon({ className }: { className?: string }) {
   return (
@@ -51,6 +52,7 @@ export function ProductDetails({ productId }: ProductDetailsProps) {
   const [size, setSize] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const addItem = useCartStore((s) => s.addItem);
+  const addToast = useToastStore((s) => s.add);
 
   if (isLoading) {
     return (
@@ -91,6 +93,7 @@ export function ProductDetails({ productId }: ProductDetailsProps) {
   const handleAddToCart = () => {
     if (!canAddToCart) return;
     addItem(product, size);
+    addToast('Added to cart');
   };
 
   const goPrev = () => {

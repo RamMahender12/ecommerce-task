@@ -1,22 +1,29 @@
 'use client';
 
 import { useProducts } from '@/hooks/use-products';
-import type { ProductFilters, SortOption } from '@/types/product';
+import type { Product, ProductFilters, SortOption } from '@/types/product';
 import { ProductCard } from './ProductCard';
 import { ProductGridSkeleton } from './ProductGridSkeleton';
 
 export type ProductGridProps = {
   filters?: ProductFilters;
   sort?: SortOption;
+  /** When provided, used instead of fetching (e.g. for paginated slice) */
+  products?: Product[];
   /** Optional class for the grid container */
   className?: string;
 };
 
-export function ProductGrid({ filters, sort, className }: ProductGridProps) {
-  const { data: products, error, isLoading } = useProducts(filters, sort);
+export function ProductGrid({ filters, sort, products: productsProp, className }: ProductGridProps) {
+  const { data: fetchedProducts, error, isLoading } = useProducts(
+    filters,
+    sort,
+    { skip: productsProp != null }
+  );
+  const products = productsProp ?? fetchedProducts;
 
-  if (isLoading) return <ProductGridSkeleton />;
-  if (error) {
+  if (productsProp == null && isLoading) return <ProductGridSkeleton />;
+  if (productsProp == null && error) {
     return (
       <div className="rounded-md border border-red-200 bg-red-50 py-8 text-center text-red-700">
         Failed to load products. Please try again.

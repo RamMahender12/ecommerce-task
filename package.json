@@ -9,11 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "framer-motion": "^11.0.0",
     "next": "^14.2.0",
+    "next-themes": "^0.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "zustand": "^4.5.0",
-    "swr": "^2.2.5"
+    "swr": "^2.2.5",
+    "zustand": "^4.5.0"
+  },
+  "overrides": {
+    "minipass": "7.1.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
