@@ -12,7 +12,7 @@ export const DEMO_CREDENTIALS = {
   password: 'password123',
 } as const;
 
-type AuthState = {
+export type AuthState = {
   user: User | null;
   login: (email: string, password: string) => boolean;
   logout: () => void;
